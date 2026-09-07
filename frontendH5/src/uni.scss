@@ -1,0 +1,11 @@
+/* uni-app 全局注入的 scss 变量（页面与组件内可直接使用）。
+ * 颜色 token 的运行时值统一在 App.vue 的 CSS 自定义属性中维护，支持明暗主题。 */
+$uni-primary: #2f6bff;
+$uni-success: #16a34a;
+$uni-warning: #d97706;
+$uni-error: #dc2626;
+$uni-text-color: #1a1d24;
+$uni-text-color-muted: #8a8f99;
+$uni-border-color: #e5e7eb;
+$uni-bg-color: #f5f6f8;
+$uni-card-bg: #ffffff;

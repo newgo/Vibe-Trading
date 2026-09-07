@@ -1,0 +1,52 @@
+{
+  "pages": [
+    {
+      "path": "pages/chat/index",
+      "style": { "navigationBarTitleText": "对话" }
+    },
+    {
+      "path": "pages/chat/detail",
+      "style": { "navigationBarTitleText": "会话" }
+    },
+    {
+      "path": "pages/portfolio/index",
+      "style": {
+        "navigationBarTitleText": "持仓",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/reports/index",
+      "style": {
+        "navigationBarTitleText": "报告",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/reports/detail",
+      "style": { "navigationBarTitleText": "报告详情" }
+    },
+    {
+      "path": "pages/me/index",
+      "style": { "navigationBarTitleText": "我的" }
+    }
+  ],
+  "tabBar": {
+    "color": "#8a8f99",
+    "selectedColor": "#2f6bff",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      { "pagePath": "pages/chat/index", "text": "对话" },
+      { "pagePath": "pages/portfolio/index", "text": "持仓" },
+      { "pagePath": "pages/reports/index", "text": "报告" },
+      { "pagePath": "pages/me/index", "text": "我的" }
+    ]
+  },
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "Vibe Trading",
+    "navigationBarBackgroundColor": "#ffffff",
+    "backgroundColor": "#f5f6f8"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "Vibe Trading H5",
+  "appid": "",
+  "description": "Vibe Trading 移动端 H5",
+  "versionName": "0.1.0",
+  "versionCode": "1",
+  "transformPx": false,
+  "h5": {
+    "title": "Vibe Trading H5",
+    "router": {
+      "mode": "hash",
+      "base": "/"
+    }
+  }
+}
