@@ -28,12 +28,6 @@
         <switch :checked="settings.theme === 'dark'" color="#2f6bff" @change="onThemeChange" />
       </view>
     </view>
-
-    <view class="card">
-      <text class="label">关于</text>
-      <text class="small muted">Vibe Trading H5 · v0.1.0（瘦版）</text>
-      <text class="small muted">功能：Agent 对话 / 持仓看板 / 回测报告（只读）</text>
-    </view>
   </view>
 </template>
 
