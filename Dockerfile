@@ -4,6 +4,9 @@
 FROM node:22-slim@sha256:6c74791e557ce11fc957704f6d4fe134a7bc8d6f5ca4403205b2966bd488f6b3 AS frontend-build
 # node:22-slim digest resolved 2026-07-28
 
+# Alibaba Cloud (npmmirror) registry for all npm network requests.
+ENV NPM_CONFIG_REGISTRY=https://registry.npmmirror.com
+
 WORKDIR /app/frontend
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci --ignore-scripts
@@ -17,6 +20,11 @@ RUN npm run build
 FROM python:3.11-slim@sha256:e031123e3d85762b141ad1cbc56452ba69c6e722ebf2f042cc0dc86c47c0d8b3 AS builder
 # python:3.11-slim digest resolved 2026-07-13
 
+# Point apt at the Alibaba Cloud Debian mirror. Domain-only swap keeps this
+# version-agnostic (works for both deb822 sources and legacy sources.list).
+RUN sed -i 's|deb.debian.org|mirrors.aliyun.com|g; s|security.debian.org|mirrors.aliyun.com|g' \
+    /etc/apt/sources.list.d/debian.sources /etc/apt/sources.list || true
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
@@ -25,6 +33,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ENV VIRTUAL_ENV=/opt/venv
 RUN python -m venv "$VIRTUAL_ENV"
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+# Alibaba Cloud PyPI mirror for all pip downloads in this stage
+# (applies to the hash-pinned lock installs below as well).
+ENV PIP_INDEX_URL=https://mirrors.aliyun.com/pypi/simple/
 
 WORKDIR /app
 
@@ -75,6 +87,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 # Debian install list; without them the lazy `from weasyprint import HTML` in
 # reporter.py fails and PDF rendering silently downgrades to HTML-only.
 # fonts-dejavu-core gives non-blank PDFs.
+# Point apt at the Alibaba Cloud Debian mirror (same domain-only swap as the
+# builder stage; `|| true` tolerates either sources.list layout).
+RUN sed -i 's|deb.debian.org|mirrors.aliyun.com|g; s|security.debian.org|mirrors.aliyun.com|g' \
+    /etc/apt/sources.list.d/debian.sources /etc/apt/sources.list || true
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpango-1.0-0 \
     libpangoft2-1.0-0 \
