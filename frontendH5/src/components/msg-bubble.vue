@@ -1,6 +1,9 @@
 <template>
   <view :class="['row', isUser ? 'right' : 'left']">
-    <view :class="['bubble', isUser ? 'user' : msg.error ? 'bubble-error' : 'assistant']">
+    <view
+      :class="['bubble', isUser ? 'user' : msg.error ? 'bubble-error' : 'assistant']"
+      @longpress="copyContent"
+    >
       <template v-if="isUser">
         <text class="plain">{{ msg.content }}</text>
       </template>
@@ -19,7 +22,8 @@
           <text class="dot" />
         </view>
         <text v-if="msg.error" class="error-text">{{ msg.error }}</text>
-        <view v-if="footerText || msg.run_id" class="meta">
+        <view v-if="footerText || msg.run_id || msg.content" class="meta">
+          <text v-if="msg.content" class="copy-btn" @tap.stop="copyContent">复制</text>
           <text v-if="footerText" class="small muted">{{ footerText }}</text>
           <text v-if="msg.run_id" class="report-link" @tap="openReport">查看回测报告</text>
         </view>
@@ -47,6 +51,44 @@ function openReport() {
   if (!props.msg.run_id) return;
   uni.navigateTo({ url: `/pages/reports/detail?runId=${encodeURIComponent(props.msg.run_id)}` });
 }
+
+/** 复制消息全文：长按气泡或点「复制」均可触发。 */
+function copyContent() {
+  const data = (props.msg.content || "").trim();
+  if (!data) return;
+  uni.setClipboardData({
+    data,
+    success: () => toast("已复制全文"),
+    fail: () => {
+      // H5 非安全上下文（如 http 隧道）下 navigator.clipboard 不可用，退回 execCommand
+      if (execCommandCopy(data)) toast("已复制全文");
+      else toast("复制失败，可长按选择文本");
+    },
+  });
+}
+
+function toast(title: string) {
+  uni.showToast({ title, icon: "none" });
+}
+
+// #ifdef H5
+function execCommandCopy(text: string): boolean {
+  try {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.left = "-9999px";
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand("copy");
+    document.body.removeChild(ta);
+    return ok;
+  } catch {
+    return false;
+  }
+}
+// #endif
 </script>
 
 <style lang="scss" scoped>
@@ -69,6 +111,9 @@ function openReport() {
   padding: 10px 12px;
   box-sizing: border-box;
   word-break: break-word;
+  /* 移动端允许长按选择气泡内文本进行复制 */
+  -webkit-user-select: text;
+  user-select: text;
 
   &.user {
     background: var(--user-bubble);
@@ -128,6 +173,11 @@ function openReport() {
   align-items: center;
   gap: 10px;
   margin-top: 6px;
+}
+
+.copy-btn {
+  font-size: 12px;
+  color: var(--primary);
 }
 
 .report-link {

@@ -81,6 +81,22 @@ services:
       vibe-trading:
         condition: service_started
 
+  frontend-h5:
+    image: node:22@sha256:5647be709086c696ff32edaaf1c70cd26d1da6ab2b39c32f3c7b4c4a31957e37  # node:22 digest resolved 2026-07-28
+    working_dir: /app
+    ports:
+      - "127.0.0.1:5898:5898"
+    volumes:
+      - ./frontendH5:/app
+    environment:
+      - VITE_API_URL=http://vibe-trading:8899
+    command: sh -c "npm install && npm run dev:h5 -- --host --port 5898"
+    profiles:
+      - frontend
+    depends_on:
+      vibe-trading:
+        condition: service_started
+
 volumes:
   vibe-runs:
   vibe-sessions:
