@@ -242,6 +242,31 @@ function execCommandCopy(text: string): boolean {
   padding: 0;
 }
 
+/* 表格：外层容器横向滚动，避免宽表撑破气泡 */
+.md :deep(.table-wrap) {
+  overflow-x: auto;
+  margin: 6px 0;
+  -webkit-overflow-scrolling: touch;
+}
+
+.md :deep(table) {
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.md :deep(th),
+.md :deep(td) {
+  border: 1px solid var(--border);
+  padding: 4px 8px;
+  text-align: left;
+}
+
+.md :deep(th) {
+  background: var(--primary-weak);
+  font-weight: 600;
+  white-space: nowrap; /* 表头不换行；长文本单元格仍可自然折行 */
+}
+
 .md :deep(a) {
   color: var(--primary);
 }
