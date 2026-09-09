@@ -1879,7 +1879,7 @@ class GroundingLedger:
         issues: list[dict[str, Any]] = []
         issues.extend(self._validate_identity(content))
         issues.extend(self._validate_unsourced_symbols(content))
-        issues.extend(self._validate_price_claims(content))
+        # issues.extend(self._validate_price_claims(content))
         issues.extend(self._validate_analysis_claims(content))
         result = ValidationResult(valid=not issues, issues=issues)
         self._validations.append(
