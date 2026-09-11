@@ -36,5 +36,10 @@ export const useSessionsStore = defineStore("sessions", {
       const item = this.list.find((s) => s.session_id === sid);
       if (item) item.title = title;
     },
+    /** 本地同步标题（首句前缀占位 / 自动命名回写），不发起请求。 */
+    applyTitle(sid: string, title: string) {
+      const item = this.list.find((s) => s.session_id === sid);
+      if (item) item.title = title;
+    },
   },
 });

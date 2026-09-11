@@ -11,6 +11,7 @@
 import { defineStore } from "pinia";
 import { agentApi } from "@/api/agent";
 import { SSEClient, type SSEHandlers, type SSEStatus } from "@/lib/sse";
+import { useSessionsStore } from "@/stores/sessions";
 import type { ToolTrailItem } from "@/types/api";
 
 export interface ChatMessage {
@@ -337,6 +338,8 @@ export const useChatStore = defineStore("chat", {
       const text = content.trim();
       if (!sid || !text || this.isBusy) return;
       this.sending = true;
+      // 对齐桌面端：首条消息时以首句前缀占位标题，让列表立即可读
+      const isFirstUserMessage = !this.messages.some((m) => m.role === "user");
       const localId = `local-${Date.now()}`;
       this.messages.push({
         message_id: localId,
@@ -348,6 +351,7 @@ export const useChatStore = defineStore("chat", {
       });
       this.ensurePlaceholder();
       this.streaming = true;
+      if (isFirstUserMessage) void this.applyFirstPromptTitle(sid, text);
       try {
         await agentApi.sendMessage(sid, text);
       } catch (err) {
@@ -370,16 +374,36 @@ export const useChatStore = defineStore("chat", {
       }
     },
 
-    /** 首次完成的对话触发后端摘要标题（fire-and-forget）。 */
+    /** 首条消息时用首句前缀占位标题（对齐桌面端 createSession(title) 行为），
+     *  列表与导航栏立即可读；首轮完成后后端 LLM 摘要标题自动覆盖。
+     *  前缀算法需与后端 auto_title 的 auto_prefix 比对一致
+     *  （sessions_routes.py：content.strip()[:50].strip()），否则 LLM 标题会被
+     *  "kept" 守门拦下、无法接棒。 */
+    async applyFirstPromptTitle(sid: string, firstPrompt: string) {
+      const prefix = firstPrompt.slice(0, 50).trim();
+      if (!prefix) return;
+      const sessions = useSessionsStore();
+      const item = sessions.list.find((s) => s.session_id === sid);
+      if (item?.title) return; // 已有标题（手工重命名过）不覆盖
+      if (item) item.title = prefix; // 本地先行，列表/导航栏立即可见
+      try {
+        await agentApi.renameSession(sid, prefix);
+      } catch {
+        /* 占位失败不影响对话，LLM 摘要标题仍会在首轮后兜底 */
+      }
+    },
+
+    /** 首次完成的对话触发后端摘要标题（fire-and-forget），并回写会话列表。 */
     async maybeAutoTitle() {
       const sid = this.sessionId;
       if (!sid) return;
       const userCount = this.messages.filter((m) => m.role === "user").length;
       if (userCount !== 1) return;
       try {
-        await agentApi.autoTitle(sid);
+        const res = await agentApi.autoTitle(sid);
+        if (res?.title) useSessionsStore().applyTitle(sid, res.title);
       } catch {
-        /* 标题失败不影响对话 */
+        /* 标题失败不影响对话，首句前缀占位标题已兜底 */
       }
     },
   },
